@@ -7,6 +7,7 @@ const initialState = {
   experience: 0,
   level: 1,
   expToLevel: 100,
+  inventory: [],
 };
 
 export default function reducer(state = initialState, action) {
@@ -38,6 +39,8 @@ export default function reducer(state = initialState, action) {
       }
       return { ...state, experience: exp, level, expToLevel, achievements };
     }
+    case 'SET_INVENTORY':
+      return { ...state, inventory: action.payload };
     default:
       return state;
   }

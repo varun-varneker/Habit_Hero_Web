@@ -1,19 +1,26 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import CharacterProfile from './CharacterProfile';
 import StatsPanel from './StatsPanel';
 import QuestBoard from './QuestBoard';
 import RewardsPanel from './RewardsPanel';
 import AnalyticsPanel from './AnalyticsPanel';
+import Dock from '../ui/Dock';
+import { VscHome, VscAccount, VscSettingsGear } from 'react-icons/vsc';
+import { VscChecklist as VscQuests } from 'react-icons/vsc'; // Use Checklist for Quests
 import { loadUserData, saveUserData } from '../api/userData';
+import InventoryPanel from './InventoryPanel';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector(state => state.user);
   const profile = useSelector(state => state.profile);
   const stats = useSelector(state => state.stats);
   const quests = useSelector(state => state.quests);
   const achievements = useSelector(state => state.achievements);
+  const inventory = useSelector(state => state.inventory);
 
   // Load user data from Firestore on mount
   useEffect(() => {
@@ -23,19 +30,23 @@ export default function Dashboard() {
           if (data.profile) dispatch({ type: 'UPDATE_PROFILE', payload: data.profile });
           if (data.stats) dispatch({ type: 'UPDATE_STATS', payload: data.stats });
           if (data.quests) dispatch({ type: 'SET_QUESTS', payload: data.quests });
-          if (data.achievements) data.achievements.forEach(a => dispatch({ type: 'ADD_ACHIEVEMENT', payload: a }));
+          if (data.achievements) {
+            // Clear achievements before adding to avoid duplicates
+            dispatch({ type: 'SET_ACHIEVEMENTS', payload: [] });
+            data.achievements.forEach(a => dispatch({ type: 'ADD_ACHIEVEMENT', payload: a }));
+          }
+          if (data.inventory) dispatch({ type: 'SET_INVENTORY', payload: data.inventory });
         }
       });
     }
-    // eslint-disable-next-line
-  }, [user?.uid]);
+  }, [user, dispatch]);
 
   // Save user data to Firestore whenever it changes
   useEffect(() => {
     if (user?.uid) {
-      saveUserData(user.uid, { profile, stats, quests, achievements });
+      saveUserData(user.uid, { profile, stats, quests, achievements, inventory });
     }
-  }, [user?.uid, profile, stats, quests, achievements]);
+  }, [user?.uid, profile, stats, quests, achievements, inventory]);
 
   // Handlers for quests
   const handleAddQuest = (type, text) => {
@@ -58,12 +69,20 @@ export default function Dashboard() {
     dispatch({ type: 'UPDATE_PROFILE', payload: { name, bio } });
   };
 
+  const items = [
+    { icon: <VscHome size={18} />, label: 'Home', onClick: () => navigate('/') },
+    { icon: <VscQuests size={18} />, label: 'Quests', onClick: () => navigate('/quests') },
+    { icon: <VscAccount size={18} />, label: 'Profile', onClick: () => navigate('/profile') },
+    { icon: <VscSettingsGear size={18} />, label: 'Settings', onClick: () => navigate('/settings') },
+  ];
+
   return (
     <div style={styles.bg}>
       <div style={styles.container}>
         <div style={styles.left}>
           <CharacterProfile user={profile} onEdit={handleEditProfile} />
           <StatsPanel statValues={stats} />
+          <InventoryPanel inventory={inventory} />
         </div>
         <div style={styles.right}>
           <QuestBoard
@@ -76,6 +95,12 @@ export default function Dashboard() {
           <AnalyticsPanel />
         </div>
       </div>
+      <Dock 
+        items={items}
+        panelHeight={68}
+        baseItemSize={50}
+        magnification={70}
+      />
     </div>
   );
 }
