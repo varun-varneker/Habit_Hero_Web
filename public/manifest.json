@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Habit Hero",
+  "name": "Habit Hero - Gamified Habit Tracker",
+  "description": "Build better habits with RPG-style gamification. Track your progress, level up your character, and unlock achievements!",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +21,16 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#7b2ff2",
+  "background_color": "#7b2ff2",
+  "orientation": "portrait-primary",
+  "categories": ["productivity", "lifestyle", "health"],
+  "screenshots": [
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "form_factor": "narrow"
+    }
+  ]
 }
