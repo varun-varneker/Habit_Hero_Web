@@ -27,9 +27,8 @@ const initialState = {
 export default function reducer(state = initialState, action) {
   switch (action.type) {
     case 'LOGIN':
+    case 'SET_USER':
       return { ...state, user: action.payload };
-    case 'LOGOUT':
-      return { ...state, user: null };
     case 'UPDATE_PROFILE':
       return { ...state, profile: { ...state.profile, ...action.payload } };
     case 'UPDATE_STATS':
@@ -118,6 +117,8 @@ export default function reducer(state = initialState, action) {
       return { ...state, friends: action.payload };
     case 'SET_FRIEND_REQUESTS':
       return { ...state, friendRequests: action.payload };
+    case 'LOGOUT':
+      return initialState;
     default:
       return state;
   }

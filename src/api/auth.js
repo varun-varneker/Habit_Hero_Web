@@ -1,20 +1,21 @@
 import { auth } from './firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, deleteUser } from 'firebase/auth';
 
-export const login = async ({ email, password }) => {
-  return signInWithEmailAndPassword(auth, email, password);
-};
-
-export const signup = async ({ email, password }) => {
+export function signup(email, password) {
   return createUserWithEmailAndPassword(auth, email, password);
-};
+}
 
-export async function logout() {
-  await auth.signOut();
+export function login(email, password) {
+  return signInWithEmailAndPassword(auth, email, password);
+}
+
+export function logout() {
+  return signOut(auth);
 }
 
 export async function deleteAccount() {
-  if (auth.currentUser) {
-    await auth.currentUser.delete();
+  const user = auth.currentUser;
+  if (user) {
+    await deleteUser(user);
   }
 }
