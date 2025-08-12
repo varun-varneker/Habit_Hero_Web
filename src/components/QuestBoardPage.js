@@ -1,16 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import QuestBoard from './QuestBoard';
+import { saveUserData } from '../api/userData';
 
 export default function QuestBoardPage() {
   const dispatch = useDispatch();
   const quests = useSelector(state => state.quests || { daily: [], weekly: [] });
   const stats = useSelector(state => state.stats);
+  const user = useSelector(state => state.user);
 
   // Handlers for quests (same as in Dashboard)
-  const handleAddQuest = (type, text, stat) => {
+  const handleAddQuest = (type, text, stat, extra = {}) => {
     if (!quests || !quests[type]) return;
-    const updated = [...quests[type], { text, completed: false, stat }];
+    const { estimateMin, energy, context } = extra || {};
+    const updated = [...quests[type], { text, completed: false, stat, ...(estimateMin ? { estimateMin } : {}), ...(energy ? { energy } : {}), ...(context && context.length ? { context } : {}) }];
     dispatch({ type: 'UPDATE_QUEST', questType: type, quests: updated });
   };
   
@@ -39,6 +42,41 @@ export default function QuestBoardPage() {
       }
     }
   };
+
+  const handleKudos = (type, idx) => {
+    const list = [...(quests[type] || [])];
+    if (!list[idx]) return;
+    list[idx] = { ...list[idx], kudosCount: (list[idx].kudosCount || 0) + 1 };
+    dispatch({ type: 'UPDATE_QUEST', questType: type, quests: list });
+  };
+
+  const handleAddNote = (type, idx, note) => {
+    if (!note || !note.trim()) return;
+    const list = [...(quests[type] || [])];
+    if (!list[idx]) return;
+    list[idx] = { ...list[idx], notes: [...(list[idx].notes || []), { date: new Date().toISOString(), text: note.trim() }] };
+    dispatch({ type: 'UPDATE_QUEST', questType: type, quests: list });
+  };
+
+  const handleFocusComplete = (type, idx) => {
+    const list = [...(quests[type] || [])];
+    if (!list[idx]) return;
+    list[idx] = { ...list[idx], pomodorosCompleted: (list[idx].pomodorosCompleted || 0) + 1 };
+    dispatch({ type: 'UPDATE_QUEST', questType: type, quests: list });
+  };
+
+  // Save quests promptly when they change on this page
+  useEffect(() => {
+    const persist = async () => {
+      if (!user?.uid) return;
+      try {
+        await saveUserData(user.uid, { quests, lastUpdated: new Date().toISOString() });
+      } catch (e) {
+        console.error('Error saving quests:', e);
+      }
+    };
+    persist();
+  }, [quests, user?.uid]);
 
   return (
     <div style={{
@@ -92,6 +130,9 @@ export default function QuestBoardPage() {
           weeklyQuests={quests.weekly}
           onAddQuest={handleAddQuest}
           onToggleQuest={handleToggleQuest}
+          onKudos={handleKudos}
+          onAddNote={handleAddNote}
+          onFocusComplete={handleFocusComplete}
         />
       </div>
     </div>

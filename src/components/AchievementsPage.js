@@ -11,6 +11,13 @@ export default function AchievementsPage() {
   const profile = useSelector(state => state.profile);
 
   // Calculate total achievements by category
+  const toText = (a) => {
+    if (typeof a === 'string') return a;
+    if (!a || typeof a !== 'object') return '';
+    // Prefer name, fallback to description or JSON string
+    return a.name || a.title || a.description || JSON.stringify(a);
+  };
+
   const getCategorizedAchievements = () => {
     const categorized = {
       level: [],
@@ -22,16 +29,17 @@ export default function AchievementsPage() {
 
     if (achievements && achievements.length > 0) {
       achievements.forEach(achievement => {
-        if (achievement.includes('Level Up')) {
-          categorized.level.push(achievement);
-        } else if (achievement.includes('Quest') || achievement.includes('quest')) {
-          categorized.quest.push(achievement);
-        } else if (achievement.includes('streak') || achievement.includes('Streak')) {
-          categorized.streak.push(achievement);
-        } else if (achievement.includes('stat') || achievement.includes('Stat')) {
-          categorized.stat.push(achievement);
+        const text = toText(achievement);
+        if (text.includes('Level Up')) {
+          categorized.level.push(text);
+        } else if (text.includes('Quest') || text.includes('quest')) {
+          categorized.quest.push(text);
+        } else if (text.includes('streak') || text.includes('Streak')) {
+          categorized.streak.push(text);
+        } else if (text.includes('stat') || text.includes('Stat')) {
+          categorized.stat.push(text);
         } else {
-          categorized.special.push(achievement);
+          categorized.special.push(text);
         }
       });
     }
@@ -62,10 +70,10 @@ export default function AchievementsPage() {
           <span style={styles.categoryCount}>({categoryAchievements.length})</span>
         </h3>
         <div style={styles.achievementsList}>
-          {categoryAchievements.map((achievement, index) => (
+      {categoryAchievements.map((achievement, index) => (
             <div key={index} style={styles.achievementItem}>
               <span style={styles.achievementIcon}>🏆</span>
-              <span style={styles.achievementText}>{achievement}</span>
+        <span style={styles.achievementText}>{achievement}</span>
               <span style={styles.achievementDate}>
                 {new Date().toLocaleDateString()}
               </span>
